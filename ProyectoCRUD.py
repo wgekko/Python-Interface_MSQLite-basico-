@@ -6,9 +6,11 @@ Created on Fri Dec 17 14:11:25 2021
 @author: walter
 """
 
+
 from tkinter import *
 from tkinter import messagebox
 import sqlite3
+import re
 
 # -----------------------Funciones-------------------------------
 
@@ -40,7 +42,7 @@ def limpiarCampos():
     miDireccion.set("")
     miMail.set("")
     miClave.set("")
-    textoComentario.delete(1.0,END)
+    textoComentario.delete(1.0, END)
     
     
 def crear():
@@ -49,22 +51,34 @@ def crear():
      # otra opciones de query
      # datos=miNombre.get(),miApellido.get(),miDireccion.get(),miMail.get(), miClave.get(),textoComentario.get("1.0", END) 
      # miCursor.execute("INSERT INTO DATOUSUARIO VALUES (NULL, ?,?,?,?,?,?,?)",(datos))
-     
-     miCursor.execute("INSERT INTO DATOUSUARIO VALUES ( NULL, '" + miNombre.get() + 
-                                                     "','" + miApellido.get() + 
-                                                     "','" + miDireccion.get() +
-                                                     "','" + miMail.get() +
-                                                     "','" + miClave.get() + 
-                                                     "','" + textoComentario.get("1.0", END) + "')")   
-     
-     miConexion.commit()
-     
-     messagebox.showinfo("Crear", "Registro creado con éxito...")
+     try:
+         miCursor.execute("INSERT INTO USUARIO VALUES ( NULL, '" + miNombre.get() + 
+                                                         "','" + miApellido.get() + 
+                                                         "','" + miDireccion.get() +
+                                                         "','" + miMail.get() +
+                                                         "','" + miClave.get() + 
+                                                         "','" + textoComentario.get("1.0", END) + "')")   
+         
+         miConexion.commit()
+         
+         messagebox.showinfo("Crear", "Registro creado con éxito...")
+         
+     except TypeError:         
+          
+          if (miNombre.get() is None) or (miApellido.get() is None) or (miDireccion.get() is None) or (miClave.get() is None) or (textoComentario.get("1.0", END) is None):
+          
+              messagebox.showwarning("¡¡¡ Atención !!!", " esta intentado ingresar campos vacios...") 
+     except TypeError:
+          
+          if re.match('^[(a-z0-9\_\-\.)]+@[(a-z0-9\_\-\.)]+\.[(a-z)]{2,15}$',miMail.get().lower()) is None:
+                  messagebox.showwarning("¡¡¡ Atención !!!", " esta intentado ingresar correo vacio...") 
+          #else:
+           #   messagebox.showwarning("¡¡¡ Atención !!!", " esta intentado ingresar correo vacio...") 
     
 def leer():
      miConexion=sqlite3.connect("Usuario")
      miCursor=miConexion.cursor()
-     miCursor.execute("SELECT * FROM DATOUSUARIO WHERE ID=" + miId.get())   
+     miCursor.execute("SELECT * FROM USUARIO WHERE ID=" + miId.get())   
      
      elUsuario=miCursor.fetchall()
      for usuario in elUsuario:
@@ -85,7 +99,7 @@ def editar():
      # datos=miNombre.get(),miApellido.get(),miDireccion.get(),miMail.get(), miClave.get(),textoComentario.get("1.0", END) 
      # miCursor.execute("UPDATE DATOUSUARIO SET NOMBRE=?, APELLLIDO=?, DIRECCION=?, MAIL=?, CLAVE=?, COMENTARIO=? " + "WHERE ID=" +miId.get(),(datos)) 
      
-     miCursor.execute("UPDATE DATOUSUARIO SET NOMBRE='" + miNombre.get() + 
+     miCursor.execute("UPDATE USUARIO SET NOMBRE='" + miNombre.get() + 
                                                      "', APELLIDO='" + miApellido.get() + 
                                                      "', DIRECCION='" + miDireccion.get() +
                                                      "', MAIL='" + miMail.get() +
@@ -101,7 +115,7 @@ def editar():
 def borrar():
      miConexion=sqlite3.connect("Usuario")
      miCursor=miConexion.cursor()
-     miCursor.execute("DELETE FROM DATOUSUARIO WHERE ID=" + miId.get())   
+     miCursor.execute("DELETE FROM USUARIO WHERE ID=" + miId.get())   
      
      miConexion.commit()
      
@@ -143,6 +157,7 @@ root=Tk()
 
 barraMenu=Menu(root)
 root.config(menu=barraMenu, width=400, height=400)
+root.title(" *** Registro de Usuarios *** ")
 
 ArchivoMenu=Menu(barraMenu, tearoff=0)
 ArchivoMenu.add_command(label="crear BBDD", command=conexionBBDD)
